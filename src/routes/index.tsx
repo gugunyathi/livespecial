@@ -150,9 +150,9 @@ function App() {
       <section className="relative z-10 h-[78vh] cursor-grab touch-pan-y active:cursor-grabbing" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerLeave={up}>
         <div className="absolute left-1/2 top-1/2">
           {[1, 0.72, 0.45].map((k) => (
-            <div key={k} className="absolute rounded-full border border-primary/15 animate-breathe" style={{ width: radAnim * scale * 2.9 * k, height: radAnim * scale * 1.9 * k, transform: "translate(-50%,-50%)", left: 0, top: 0 }} />
+            <div key={k} className="absolute rounded-full border border-primary/15 animate-breathe" style={{ width: radAnim * scale * 2.9 * k, height: radAnim * scale * 1.9 * k, left: -radAnim * scale * 1.45 * k, top: -radAnim * scale * 0.95 * k }} />
           ))}
-          <div className="absolute h-28 w-28 -translate-x-1/2 -translate-y-1/2 rounded-full bg-secondary/30 blur-2xl animate-breathe" />
+          <div className="absolute -left-14 -top-14 h-28 w-28 rounded-full bg-secondary/30 blur-2xl animate-breathe" />
           <div className="absolute -translate-x-1/2 -translate-y-1/2 text-center">
             <div className="mx-auto h-4 w-4 rounded-full bg-primary shadow-teal" />
             <p className="mt-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">You · {outdoor ? "50m" : "20m"}</p>
