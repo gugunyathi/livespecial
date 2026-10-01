@@ -40,13 +40,17 @@ function App() {
   const [logs, setLogs] = useState<Log[]>([]);
   const [left, setLeft] = useState(0);
   const [w, setW] = useState(1000);
+  const [h, setH] = useState(800);
 
   useEffect(() => {
-    const on = () => setW(window.innerWidth);
+    const on = () => { setW(window.innerWidth); setH(window.innerHeight); };
     on(); window.addEventListener("resize", on);
     return () => window.removeEventListener("resize", on);
   }, []);
-  const scale = Math.min(1, w / 760);
+  const watch = w < 320 || h < 320;
+  const mobile = w < 640;
+  const scale = Math.max(0.3, Math.min(1, w / 760, (h - 160) / 640));
+  const cardHalf = watch ? 22 : mobile ? 64 : 88;
   useEffect(() => setRadius(outdoor ? 300 : 175), [outdoor]);
 
   // animation loop
@@ -115,11 +119,11 @@ function App() {
     const a = (i / n) * Math.PI * 2 + rot;
     const lat = Math.sin(i * 2.3) * 0.45;
     const R = radAnim * scale;
-    const x = Math.sin(a) * Math.cos(lat) * R * 1.35;
+    const x = Math.sin(a) * Math.cos(lat) * Math.min(R * 1.35, w / 2 - cardHalf * 0.7);
     const z = Math.cos(a) * Math.cos(lat);
     const y = Math.sin(lat) * R * 0.9 + Math.sin(rot * 3 + i) * 6;
     return { s, x, y, z };
-  }), [stores, rot, radAnim, scale, n]);
+  }), [stores, rot, radAnim, scale, n, w, cardHalf]);
 
   const down = (e: React.PointerEvent) => { drag.current = { x: e.clientX, r: rotRef.current }; target.current = null; (e.target as HTMLElement).setPointerCapture?.(e.pointerId); };
   const move = (e: React.PointerEvent) => {
@@ -132,22 +136,22 @@ function App() {
   const mm = String(Math.floor(left / 60)).padStart(2, "0") + ":" + String(left % 60).padStart(2, "0");
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-background bg-aurora select-none">
+    <main className="relative h-dvh overflow-hidden bg-background bg-aurora select-none">
       {/* header */}
-      <header className="relative z-20 flex flex-wrap items-center justify-between gap-4 px-5 pt-5 md:px-10">
-        <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-primary">ACN · live mesh</p>
-          <h1 className="text-lg font-semibold tracking-tight md:text-2xl">The Autonomous Commerce Network</h1>
-        </div>
-        <button onClick={() => setOutdoor((o) => !o)} className="glass relative flex rounded-full p-1 font-mono text-xs" aria-label="Toggle radius mode">
-          <span className="absolute inset-y-1 w-1/2 rounded-full bg-primary shadow-teal transition-transform duration-700 ease-[cubic-bezier(.3,1.4,.4,1)]" style={{ transform: `translateX(${outdoor ? "96%" : "0"})` }} />
-          <span className={`relative z-10 px-4 py-2 transition-colors ${!outdoor ? "text-primary-foreground" : "text-muted-foreground"}`}>Indoor · 20m</span>
-          <span className={`relative z-10 px-4 py-2 transition-colors ${outdoor ? "text-primary-foreground" : "text-muted-foreground"}`}>Outdoor · 50m</span>
+      <header className={`relative z-20 grid items-center gap-2 px-3 pt-3 sm:flex sm:justify-between sm:gap-4 sm:px-6 sm:pt-5 lg:px-10 ${watch ? "justify-items-center" : "grid-cols-[minmax(0,1fr)_auto]"}`}>
+        {!watch && <div className="min-w-0">
+          <p className="font-mono text-[9px] uppercase tracking-[0.3em] text-primary sm:text-[10px]">ACN · live mesh</p>
+          <h1 className="truncate text-sm font-semibold tracking-tight sm:text-lg lg:text-2xl"><span className="sm:hidden">Autonomous Commerce</span><span className="hidden sm:inline">The Autonomous Commerce Network</span></h1>
+        </div>}
+        <button onClick={() => setOutdoor((o) => !o)} className="glass relative flex shrink-0 rounded-full p-1 font-mono text-[10px] sm:text-xs" aria-label="Toggle radius mode">
+          <span className="absolute inset-y-1 w-1/2 rounded-full bg-primary shadow-teal transition-transform duration-700 ease-[cubic-bezier(.3,1.4,.4,1)]" style={{ transform: `translateX(${outdoor ? "100%" : "0"})` }} />
+          <span className={`relative z-10 w-1/2 px-2.5 py-1.5 text-center transition-colors sm:px-4 sm:py-2 ${!outdoor ? "text-primary-foreground" : "text-muted-foreground"}`}>{mobile ? "In·20m" : "Indoor · 20m"}</span>
+          <span className={`relative z-10 w-1/2 px-2.5 py-1.5 text-center transition-colors sm:px-4 sm:py-2 ${outdoor ? "text-primary-foreground" : "text-muted-foreground"}`}>{mobile ? "Out·50m" : "Outdoor · 50m"}</span>
         </button>
       </header>
 
       {/* sphere */}
-      <section className="relative z-10 h-[78vh] cursor-grab touch-pan-y active:cursor-grabbing" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerLeave={up}>
+      <section className="relative z-10 h-[calc(100dvh-7.5rem)] cursor-grab sm:h-[calc(100dvh-9rem)] touch-pan-y active:cursor-grabbing" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerLeave={up}>
         <div className="absolute left-1/2 top-1/2">
           {[1, 0.72, 0.45].map((k) => (
             <div key={k} className="absolute rounded-full border border-primary/15 animate-breathe" style={{ width: radAnim * scale * 2.9 * k, height: radAnim * scale * 1.9 * k, left: -radAnim * scale * 1.45 * k, top: -radAnim * scale * 0.95 * k }} />
@@ -165,9 +169,10 @@ function App() {
             const c = hueVar[s.hue];
             return (
               <button key={s.id} onClick={() => trigger(s)}
-                className="glass absolute left-0 top-0 w-44 rounded-2xl p-3 text-left transition-[box-shadow,border-color] duration-500"
+                aria-label={`${s.name}, ${s.dist} metres`}
+                className={`glass absolute left-0 top-0 text-left ${watch ? "grid h-11 w-11 place-items-center rounded-full p-0" : mobile ? "w-32 rounded-xl p-2" : "w-44 rounded-2xl p-3"}`} transition-[box-shadow,border-color] duration-500"
                 style={{
-                  transform: `translate(-50%,-50%) translate(${x}px, ${y}px) scale(${(0.45 + p * 0.65) * (hot ? 1.18 : 1) * Math.max(scale, 0.75)})`,
+                  transform: `translate(-50%,-50%) translate(${x}px, ${y}px) scale(${(0.45 + p * 0.65) * (hot ? 1.18 : 1) * (watch ? 1 : Math.max(scale, 0.8))})`,
                   opacity: 0.12 + p * 0.88, zIndex: Math.round(p * 100), filter: `blur(${(1 - p) * 2.5}px)`,
                   boxShadow: hot ? "var(--glow-amber)" : `0 0 ${p * 22}px color-mix(in oklab, ${c} 40%, transparent)`,
                   borderColor: hot ? "var(--accent)" : `color-mix(in oklab, ${c} 35%, transparent)`,
