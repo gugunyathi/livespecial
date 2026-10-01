@@ -87,7 +87,7 @@ function App() {
   const n = stores.length;
   const trigger = (s?: Store) => {
     const idx = s ? stores.indexOf(s) : Math.floor(Math.random() * n);
-    const store = stores[idx];
+    const store = stores[idx]!;
     const base = (idx / n) * Math.PI * 2;
     let tgt = -base;
     while (tgt < rotRef.current - Math.PI) tgt += Math.PI * 2;
