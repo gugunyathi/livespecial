@@ -218,26 +218,26 @@ function App() {
             <div className="flex justify-between font-mono text-[10px] text-muted-foreground"><span>Expires in</span><span className="text-foreground">{mm}</span></div>
             <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full bg-cta transition-[width] duration-300" style={{ width: `${(left / deal.total) * 100}%` }} /></div>
           </div>
-          <ol className={`mt-3 space-y-1 sm:mt-4 sm:space-y-1.5 ${watch ? "hidden" : ""}`} data-x=" border-l border-border pl-3 font-mono text-[11px]">
+          <ol className={`mt-3 space-y-1 sm:mt-4 sm:space-y-1.5 border-l border-border pl-3 font-mono text-[10px] sm:text-[11px] ${watch ? "hidden" : ""}`}>
             <li className="text-muted-foreground">Shop opened at <span className="text-foreground">R{deal.store.open}</span></li>
             <li className="text-muted-foreground">Your agent counter-offered <span className="text-primary">R{deal.counter}</span></li>
             <li className="text-muted-foreground">Settlement reached at <span className="text-accent">R{deal.price}!</span></li>
           </ol>
           <button onClick={() => { setClaimed((c) => [...c, deal.store.id]); setLogs((l) => [{ t: now(), msg: `CLAIMED ${deal.store.item} @ R${deal.price} · QR token issued`, id: logId++ }, ...l]); setDeal(null); }}
-            className="bg-cta mt-5 w-full rounded-2xl py-3 font-semibold text-accent-foreground shadow-amber transition-transform hover:scale-[1.02] active:scale-95">
+            className="bg-cta mt-3 w-full rounded-2xl py-2.5 text-sm sm:mt-5 sm:py-3 sm:text-base font-semibold text-accent-foreground shadow-amber transition-transform hover:scale-[1.02] active:scale-95">
             Accept & Claim
           </button>
         </aside>
       )}
 
       {/* drawer */}
-      <div className={`glass fixed inset-x-0 bottom-0 z-50 mx-auto max-w-4xl rounded-t-3xl transition-transform duration-700 ease-[cubic-bezier(.25,1.3,.4,1)] ${drawer ? "translate-y-0" : "translate-y-[calc(100%-4rem)]"}`}>
-        <button onClick={() => setDrawer((d) => !d)} className="flex h-16 w-full items-center justify-between px-6">
+      <div className={`glass fixed inset-x-0 bottom-0 z-50 max-h-[90dvh] overflow-y-auto ${watch ? "hidden" : ""} mx-auto max-w-4xl rounded-t-3xl transition-transform duration-700 ease-[cubic-bezier(.25,1.3,.4,1)] ${drawer ? "translate-y-0" : "translate-y-[calc(100%-3.5rem)]"}`}>
+        <button onClick={() => setDrawer((d) => !d)} className="sticky top-0 flex h-14 w-full items-center justify-between px-4 sm:px-6">
           <span className="font-mono text-xs uppercase tracking-[0.3em] text-primary">Agent control</span>
           <span className="mx-auto h-1 w-10 rounded-full bg-muted-foreground/50" />
           <span className="font-mono text-[10px] text-muted-foreground">{claimed.length} claimed {drawer ? "▾" : "▴"}</span>
         </button>
-        <div className="grid gap-6 px-6 pb-6 md:grid-cols-2">
+        <div className="grid gap-6 px-4 pb-6 sm:px-6 md:grid-cols-2">
           <div>
             <h3 className="font-semibold">My Agent Profile</h3>
             <p className="mt-3 text-xs text-muted-foreground">Intent tags</p>
@@ -255,7 +255,7 @@ function App() {
           </div>
           <div>
             <h3 className="font-semibold">Live Stream Activity Log</h3>
-            <div className="mt-3 h-56 overflow-hidden rounded-xl border border-border bg-background/70 p-3 font-mono text-[11px] leading-relaxed">
+            <div className="mt-3 h-44 overflow-hidden sm:h-56 rounded-xl border border-border bg-background/70 p-3 font-mono text-[11px] leading-relaxed">
               {logs.map((l) => (
                 <p key={l.id} className="animate-ticker truncate"><span className="text-muted-foreground">[{l.t}]</span> <span className={l.msg.startsWith("CLAIMED") ? "text-accent" : "text-primary"}>{l.msg}</span></p>
               ))}
