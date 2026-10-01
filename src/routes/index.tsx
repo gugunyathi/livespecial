@@ -40,17 +40,13 @@ function App() {
   const [logs, setLogs] = useState<Log[]>([]);
   const [left, setLeft] = useState(0);
   const [w, setW] = useState(1000);
-  const [h, setH] = useState(800);
 
   useEffect(() => {
-    const on = () => { setW(window.innerWidth); setH(window.innerHeight); };
+    const on = () => setW(window.innerWidth);
     on(); window.addEventListener("resize", on);
     return () => window.removeEventListener("resize", on);
   }, []);
-  const watch = w < 320 || h < 320;
-  const mobile = w < 640;
-  const scale = Math.max(0.3, Math.min(1, w / 760, (h - 160) / 640));
-  const cardHalf = watch ? 22 : mobile ? 64 : 88;
+  const scale = Math.min(1, w / 760);
   useEffect(() => setRadius(outdoor ? 300 : 175), [outdoor]);
 
   // animation loop
@@ -119,11 +115,11 @@ function App() {
     const a = (i / n) * Math.PI * 2 + rot;
     const lat = Math.sin(i * 2.3) * 0.45;
     const R = radAnim * scale;
-    const x = Math.sin(a) * Math.cos(lat) * Math.min(R * 1.35, w / 2 - cardHalf * 0.7);
+    const x = Math.sin(a) * Math.cos(lat) * R * 1.35;
     const z = Math.cos(a) * Math.cos(lat);
     const y = Math.sin(lat) * R * 0.9 + Math.sin(rot * 3 + i) * 6;
     return { s, x, y, z };
-  }), [stores, rot, radAnim, scale, n, w, cardHalf]);
+  }), [stores, rot, radAnim, scale, n]);
 
   const down = (e: React.PointerEvent) => { drag.current = { x: e.clientX, r: rotRef.current }; target.current = null; (e.target as HTMLElement).setPointerCapture?.(e.pointerId); };
   const move = (e: React.PointerEvent) => {
@@ -136,22 +132,22 @@ function App() {
   const mm = String(Math.floor(left / 60)).padStart(2, "0") + ":" + String(left % 60).padStart(2, "0");
 
   return (
-    <main className="relative h-dvh overflow-hidden bg-background bg-aurora select-none">
+    <main className="relative min-h-screen overflow-hidden bg-background bg-aurora select-none">
       {/* header */}
-      <header className={`relative z-20 grid items-center gap-2 px-3 pt-3 sm:flex sm:justify-between sm:gap-4 sm:px-6 sm:pt-5 lg:px-10 ${watch ? "justify-items-center" : "grid-cols-[minmax(0,1fr)_auto]"}`}>
-        {!watch && <div className="min-w-0">
-          <p className="font-mono text-[9px] uppercase tracking-[0.3em] text-primary sm:text-[10px]">ACN · live mesh</p>
-          <h1 className="truncate text-sm font-semibold tracking-tight sm:text-lg lg:text-2xl"><span className="sm:hidden">Autonomous Commerce</span><span className="hidden sm:inline">The Autonomous Commerce Network</span></h1>
-        </div>}
-        <button onClick={() => setOutdoor((o) => !o)} className="glass relative flex shrink-0 rounded-full p-1 font-mono text-[10px] sm:text-xs" aria-label="Toggle radius mode">
-          <span className="absolute inset-y-1 w-1/2 rounded-full bg-primary shadow-teal transition-transform duration-700 ease-[cubic-bezier(.3,1.4,.4,1)]" style={{ transform: `translateX(${outdoor ? "100%" : "0"})` }} />
-          <span className={`relative z-10 w-1/2 px-2.5 py-1.5 text-center transition-colors sm:px-4 sm:py-2 ${!outdoor ? "text-primary-foreground" : "text-muted-foreground"}`}>{mobile ? "In·20m" : "Indoor · 20m"}</span>
-          <span className={`relative z-10 w-1/2 px-2.5 py-1.5 text-center transition-colors sm:px-4 sm:py-2 ${outdoor ? "text-primary-foreground" : "text-muted-foreground"}`}>{mobile ? "Out·50m" : "Outdoor · 50m"}</span>
+      <header className="relative z-20 flex flex-wrap items-center justify-between gap-4 px-5 pt-5 md:px-10">
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-primary">ACN · live mesh</p>
+          <h1 className="text-lg font-semibold tracking-tight md:text-2xl">The Autonomous Commerce Network</h1>
+        </div>
+        <button onClick={() => setOutdoor((o) => !o)} className="glass relative flex rounded-full p-1 font-mono text-xs" aria-label="Toggle radius mode">
+          <span className="absolute inset-y-1 w-1/2 rounded-full bg-primary shadow-teal transition-transform duration-700 ease-[cubic-bezier(.3,1.4,.4,1)]" style={{ transform: `translateX(${outdoor ? "96%" : "0"})` }} />
+          <span className={`relative z-10 px-4 py-2 transition-colors ${!outdoor ? "text-primary-foreground" : "text-muted-foreground"}`}>Indoor · 20m</span>
+          <span className={`relative z-10 px-4 py-2 transition-colors ${outdoor ? "text-primary-foreground" : "text-muted-foreground"}`}>Outdoor · 50m</span>
         </button>
       </header>
 
       {/* sphere */}
-      <section className="relative z-10 h-[calc(100dvh-7.5rem)] cursor-grab sm:h-[calc(100dvh-9rem)] touch-pan-y active:cursor-grabbing" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerLeave={up}>
+      <section className="relative z-10 h-[78vh] cursor-grab touch-pan-y active:cursor-grabbing" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerLeave={up}>
         <div className="absolute left-1/2 top-1/2">
           {[1, 0.72, 0.45].map((k) => (
             <div key={k} className="absolute rounded-full border border-primary/15 animate-breathe" style={{ width: radAnim * scale * 2.9 * k, height: radAnim * scale * 1.9 * k, left: -radAnim * scale * 1.45 * k, top: -radAnim * scale * 0.95 * k }} />
@@ -169,48 +165,46 @@ function App() {
             const c = hueVar[s.hue];
             return (
               <button key={s.id} onClick={() => trigger(s)}
-                aria-label={`${s.name}, ${s.dist} metres`}
-                className={`glass absolute left-0 top-0 text-left ${watch ? "grid h-11 w-11 place-items-center rounded-full p-0" : mobile ? "w-32 rounded-xl p-2" : "w-44 rounded-2xl p-3"}`} transition-[box-shadow,border-color] duration-500"
+                className="glass absolute left-0 top-0 w-44 rounded-2xl p-3 text-left transition-[box-shadow,border-color] duration-500"
                 style={{
-                  transform: `translate(-50%,-50%) translate(${x}px, ${y}px) scale(${(0.45 + p * 0.65) * (hot ? 1.18 : 1) * (watch ? 1 : Math.max(scale, 0.8))})`,
+                  transform: `translate(-50%,-50%) translate(${x}px, ${y}px) scale(${(0.45 + p * 0.65) * (hot ? 1.18 : 1) * Math.max(scale, 0.75)})`,
                   opacity: 0.12 + p * 0.88, zIndex: Math.round(p * 100), filter: `blur(${(1 - p) * 2.5}px)`,
                   boxShadow: hot ? "var(--glow-amber)" : `0 0 ${p * 22}px color-mix(in oklab, ${c} 40%, transparent)`,
                   borderColor: hot ? "var(--accent)" : `color-mix(in oklab, ${c} 35%, transparent)`,
                   pointerEvents: p < 0.35 ? "none" : "auto",
                 }}>
-                {watch ? <span className="text-lg">{s.icon}</span> : <>
                 <div className="flex items-center gap-2">
-                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-sm sm:h-9 sm:w-9 sm:text-lg" style={{ background: `color-mix(in oklab, ${c} 25%, transparent)`, boxShadow: `inset 0 0 12px ${c}` }}>{s.icon}</span>
+                  <span className="grid h-9 w-9 place-items-center rounded-full text-lg" style={{ background: `color-mix(in oklab, ${c} 25%, transparent)`, boxShadow: `inset 0 0 12px ${c}` }}>{s.icon}</span>
                   <div className="min-w-0">
-                    <p className="truncate text-xs font-semibold sm:text-sm">{s.name}</p>
-                    <p className="truncate font-mono text-[9px] text-muted-foreground sm:text-[10px]">{s.cat} · {s.dist}m</p>
+                    <p className="truncate text-sm font-semibold">{s.name}</p>
+                    <p className="font-mono text-[10px] text-muted-foreground">{s.cat} · {s.dist}m</p>
                   </div>
                 </div>
                 <div className="mt-2 flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-wider" style={{ color: c }}>
                   <span className="relative flex h-2 w-2"><span className="absolute inset-0 animate-ping rounded-full" style={{ background: c }} /><span className="relative h-2 w-2 rounded-full" style={{ background: c }} /></span>
-                  {claimed.includes(s.id) ? "Deal claimed ✓" : mobile ? "Agent syncing" : "AI agent synchronizing"}
+                  {claimed.includes(s.id) ? "Deal claimed ✓" : "AI agent synchronizing"}
                 </div>
                 <div className="mt-1.5 h-4 overflow-hidden font-mono text-[10px] text-foreground/80">
                   <p key={ticks[s.id]} className="animate-ticker truncate">{ticks[s.id] ?? "Opening channel…"}</p>
-                </div></>}
+                </div>
               </button>
             );
           })}
         </div>
-        <p className="pointer-events-none absolute bottom-3 left-1/2 hidden w-max -translate-x-1/2 font-mono text-[10px] sm:block uppercase tracking-[0.3em] text-muted-foreground">Drag to roll the sphere · tap an orb to negotiate</p>
+        <p className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Drag to roll the sphere · tap an orb to negotiate</p>
       </section>
 
       {/* deal card */}
       {deal && (
-        <aside key={deal.store.id + deal.expires} className={`glass animate-slideup fixed z-40 overflow-y-auto shadow-amber ${watch ? "inset-1 rounded-2xl p-3" : "inset-x-2 bottom-[4.5rem] max-h-[calc(100dvh-6rem)] rounded-3xl p-4 sm:inset-x-auto sm:right-6 sm:w-[380px] sm:p-5 md:bottom-auto md:right-8 md:top-28"}`}>
+        <aside key={deal.store.id + deal.expires} className="glass animate-slideup fixed bottom-24 right-4 z-40 w-[min(380px,calc(100vw-2rem))] rounded-3xl p-5 shadow-amber md:right-8 md:top-28 md:bottom-auto">
           <div className="flex items-start justify-between">
             <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">⚡ Deal matched</p>
             <button onClick={() => setDeal(null)} className="text-muted-foreground hover:text-foreground" aria-label="Dismiss">✕</button>
           </div>
-          <h2 className="mt-1 text-base font-semibold sm:mt-2 sm:text-xl">{deal.store.item}</h2>
-          <p className="truncate text-xs text-muted-foreground sm:text-sm">{deal.store.icon} {deal.store.name} · {deal.store.dist}m away</p>
-          <div className="mt-2 flex items-end gap-3 sm:mt-4">
-            <span className="text-2xl font-bold text-accent sm:text-4xl">R{deal.price}</span>
+          <h2 className="mt-2 text-xl font-semibold">{deal.store.item}</h2>
+          <p className="text-sm text-muted-foreground">{deal.store.icon} {deal.store.name} · {deal.store.dist}m away</p>
+          <div className="mt-4 flex items-end gap-3">
+            <span className="text-4xl font-bold text-accent">R{deal.price}</span>
             <span className="pb-1 text-sm text-muted-foreground line-through">R{deal.store.open}</span>
             <span className="ml-auto pb-1 font-mono text-xs text-primary">-{Math.round((1 - deal.price / deal.store.open) * 100)}%</span>
           </div>
@@ -218,26 +212,26 @@ function App() {
             <div className="flex justify-between font-mono text-[10px] text-muted-foreground"><span>Expires in</span><span className="text-foreground">{mm}</span></div>
             <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full bg-cta transition-[width] duration-300" style={{ width: `${(left / deal.total) * 100}%` }} /></div>
           </div>
-          <ol className={`mt-3 space-y-1 sm:mt-4 sm:space-y-1.5 border-l border-border pl-3 font-mono text-[10px] sm:text-[11px] ${watch ? "hidden" : ""}`}>
+          <ol className="mt-4 space-y-1.5 border-l border-border pl-3 font-mono text-[11px]">
             <li className="text-muted-foreground">Shop opened at <span className="text-foreground">R{deal.store.open}</span></li>
             <li className="text-muted-foreground">Your agent counter-offered <span className="text-primary">R{deal.counter}</span></li>
             <li className="text-muted-foreground">Settlement reached at <span className="text-accent">R{deal.price}!</span></li>
           </ol>
           <button onClick={() => { setClaimed((c) => [...c, deal.store.id]); setLogs((l) => [{ t: now(), msg: `CLAIMED ${deal.store.item} @ R${deal.price} · QR token issued`, id: logId++ }, ...l]); setDeal(null); }}
-            className="bg-cta mt-3 w-full rounded-2xl py-2.5 text-sm sm:mt-5 sm:py-3 sm:text-base font-semibold text-accent-foreground shadow-amber transition-transform hover:scale-[1.02] active:scale-95">
+            className="bg-cta mt-5 w-full rounded-2xl py-3 font-semibold text-accent-foreground shadow-amber transition-transform hover:scale-[1.02] active:scale-95">
             Accept & Claim
           </button>
         </aside>
       )}
 
       {/* drawer */}
-      <div className={`glass fixed inset-x-0 bottom-0 z-50 max-h-[90dvh] overflow-y-auto ${watch ? "hidden" : ""} mx-auto max-w-4xl rounded-t-3xl transition-transform duration-700 ease-[cubic-bezier(.25,1.3,.4,1)] ${drawer ? "translate-y-0" : "translate-y-[calc(100%-3.5rem)]"}`}>
-        <button onClick={() => setDrawer((d) => !d)} className="sticky top-0 flex h-14 w-full items-center justify-between px-4 sm:px-6">
+      <div className={`glass fixed inset-x-0 bottom-0 z-50 mx-auto max-w-4xl rounded-t-3xl transition-transform duration-700 ease-[cubic-bezier(.25,1.3,.4,1)] ${drawer ? "translate-y-0" : "translate-y-[calc(100%-4rem)]"}`}>
+        <button onClick={() => setDrawer((d) => !d)} className="flex h-16 w-full items-center justify-between px-6">
           <span className="font-mono text-xs uppercase tracking-[0.3em] text-primary">Agent control</span>
           <span className="mx-auto h-1 w-10 rounded-full bg-muted-foreground/50" />
           <span className="font-mono text-[10px] text-muted-foreground">{claimed.length} claimed {drawer ? "▾" : "▴"}</span>
         </button>
-        <div className="grid gap-6 px-4 pb-6 sm:px-6 md:grid-cols-2">
+        <div className="grid gap-6 px-6 pb-6 md:grid-cols-2">
           <div>
             <h3 className="font-semibold">My Agent Profile</h3>
             <p className="mt-3 text-xs text-muted-foreground">Intent tags</p>
@@ -255,7 +249,7 @@ function App() {
           </div>
           <div>
             <h3 className="font-semibold">Live Stream Activity Log</h3>
-            <div className="mt-3 h-44 overflow-hidden sm:h-56 rounded-xl border border-border bg-background/70 p-3 font-mono text-[11px] leading-relaxed">
+            <div className="mt-3 h-56 overflow-hidden rounded-xl border border-border bg-background/70 p-3 font-mono text-[11px] leading-relaxed">
               {logs.map((l) => (
                 <p key={l.id} className="animate-ticker truncate"><span className="text-muted-foreground">[{l.t}]</span> <span className={l.msg.startsWith("CLAIMED") ? "text-accent" : "text-primary"}>{l.msg}</span></p>
               ))}
