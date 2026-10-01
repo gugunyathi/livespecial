@@ -178,38 +178,39 @@ function App() {
                   borderColor: hot ? "var(--accent)" : `color-mix(in oklab, ${c} 35%, transparent)`,
                   pointerEvents: p < 0.35 ? "none" : "auto",
                 }}>
+                {watch ? <span className="text-lg">{s.icon}</span> : <>
                 <div className="flex items-center gap-2">
-                  <span className="grid h-9 w-9 place-items-center rounded-full text-lg" style={{ background: `color-mix(in oklab, ${c} 25%, transparent)`, boxShadow: `inset 0 0 12px ${c}` }}>{s.icon}</span>
+                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-sm sm:h-9 sm:w-9 sm:text-lg" style={{ background: `color-mix(in oklab, ${c} 25%, transparent)`, boxShadow: `inset 0 0 12px ${c}` }}>{s.icon}</span>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold">{s.name}</p>
-                    <p className="font-mono text-[10px] text-muted-foreground">{s.cat} · {s.dist}m</p>
+                    <p className="truncate text-xs font-semibold sm:text-sm">{s.name}</p>
+                    <p className="truncate font-mono text-[9px] text-muted-foreground sm:text-[10px]">{s.cat} · {s.dist}m</p>
                   </div>
                 </div>
                 <div className="mt-2 flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-wider" style={{ color: c }}>
                   <span className="relative flex h-2 w-2"><span className="absolute inset-0 animate-ping rounded-full" style={{ background: c }} /><span className="relative h-2 w-2 rounded-full" style={{ background: c }} /></span>
-                  {claimed.includes(s.id) ? "Deal claimed ✓" : "AI agent synchronizing"}
+                  {claimed.includes(s.id) ? "Deal claimed ✓" : mobile ? "Agent syncing" : "AI agent synchronizing"}
                 </div>
                 <div className="mt-1.5 h-4 overflow-hidden font-mono text-[10px] text-foreground/80">
                   <p key={ticks[s.id]} className="animate-ticker truncate">{ticks[s.id] ?? "Opening channel…"}</p>
-                </div>
+                </div></>}
               </button>
             );
           })}
         </div>
-        <p className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Drag to roll the sphere · tap an orb to negotiate</p>
+        <p className="pointer-events-none absolute bottom-3 left-1/2 hidden w-max -translate-x-1/2 font-mono text-[10px] sm:block uppercase tracking-[0.3em] text-muted-foreground">Drag to roll the sphere · tap an orb to negotiate</p>
       </section>
 
       {/* deal card */}
       {deal && (
-        <aside key={deal.store.id + deal.expires} className="glass animate-slideup fixed bottom-24 right-4 z-40 w-[min(380px,calc(100vw-2rem))] rounded-3xl p-5 shadow-amber md:right-8 md:top-28 md:bottom-auto">
+        <aside key={deal.store.id + deal.expires} className={`glass animate-slideup fixed z-40 overflow-y-auto shadow-amber ${watch ? "inset-1 rounded-2xl p-3" : "inset-x-2 bottom-[4.5rem] max-h-[calc(100dvh-6rem)] rounded-3xl p-4 sm:inset-x-auto sm:right-6 sm:w-[380px] sm:p-5 md:bottom-auto md:right-8 md:top-28"}`}>
           <div className="flex items-start justify-between">
             <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">⚡ Deal matched</p>
             <button onClick={() => setDeal(null)} className="text-muted-foreground hover:text-foreground" aria-label="Dismiss">✕</button>
           </div>
-          <h2 className="mt-2 text-xl font-semibold">{deal.store.item}</h2>
-          <p className="text-sm text-muted-foreground">{deal.store.icon} {deal.store.name} · {deal.store.dist}m away</p>
-          <div className="mt-4 flex items-end gap-3">
-            <span className="text-4xl font-bold text-accent">R{deal.price}</span>
+          <h2 className="mt-1 text-base font-semibold sm:mt-2 sm:text-xl">{deal.store.item}</h2>
+          <p className="truncate text-xs text-muted-foreground sm:text-sm">{deal.store.icon} {deal.store.name} · {deal.store.dist}m away</p>
+          <div className="mt-2 flex items-end gap-3 sm:mt-4">
+            <span className="text-2xl font-bold text-accent sm:text-4xl">R{deal.price}</span>
             <span className="pb-1 text-sm text-muted-foreground line-through">R{deal.store.open}</span>
             <span className="ml-auto pb-1 font-mono text-xs text-primary">-{Math.round((1 - deal.price / deal.store.open) * 100)}%</span>
           </div>
@@ -217,7 +218,7 @@ function App() {
             <div className="flex justify-between font-mono text-[10px] text-muted-foreground"><span>Expires in</span><span className="text-foreground">{mm}</span></div>
             <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full bg-cta transition-[width] duration-300" style={{ width: `${(left / deal.total) * 100}%` }} /></div>
           </div>
-          <ol className="mt-4 space-y-1.5 border-l border-border pl-3 font-mono text-[11px]">
+          <ol className={`mt-3 space-y-1 sm:mt-4 sm:space-y-1.5 ${watch ? "hidden" : ""}`} data-x=" border-l border-border pl-3 font-mono text-[11px]">
             <li className="text-muted-foreground">Shop opened at <span className="text-foreground">R{deal.store.open}</span></li>
             <li className="text-muted-foreground">Your agent counter-offered <span className="text-primary">R{deal.counter}</span></li>
             <li className="text-muted-foreground">Settlement reached at <span className="text-accent">R{deal.price}!</span></li>
