@@ -1,0 +1,6 @@
+{
+  "name": "LiveSpecial - Autonomous Commerce Network",
+  "description": "A living sphere of nearby shops where your AI agent negotiates deals in real time.",
+  "permissions": [],
+  "capabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
