@@ -74,11 +74,11 @@ function App() {
   // tickers + logs
   useEffect(() => {
     const id = setInterval(() => {
-      const s = stores[Math.floor(Math.random() * stores.length)];
-      setTicks((t) => ({ ...t, [s.id]: fill(TICKS[Math.floor(Math.random() * TICKS.length)], s) }));
+      const s = stores[Math.floor(Math.random() * stores.length)]!;
+      setTicks((t) => ({ ...t, [s.id]: fill(TICKS[Math.floor(Math.random() * TICKS.length)]!, s) }));
       const agent = s.name.replace(/[^A-Za-z]/g, "") + "Agent";
       const msgs = [`ConsumerAgent pinged ${agent}… Checking stock…`, `${agent} ACK · latency ${8 + Math.floor(Math.random() * 30)}ms`, `Intent match [${tags.join("|")}] → ${s.tag}`, `Budget guard ≤ R${budget} · ${agent} quote R${Math.round(s.open * 0.85)}`, `Handshake ${Math.random().toString(16).slice(2, 10)} signed with ${agent}`];
-      setLogs((l) => [{ t: now(), msg: msgs[Math.floor(Math.random() * msgs.length)], id: logId++ }, ...l].slice(0, 60));
+      setLogs((l) => [{ t: now(), msg: msgs[Math.floor(Math.random() * msgs.length)]!, id: logId++ }, ...l].slice(0, 60));
     }, 1300);
     return () => clearInterval(id);
   }, [stores, tags, budget]);
