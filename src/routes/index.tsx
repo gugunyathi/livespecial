@@ -721,10 +721,10 @@ export function App() {
 
                 // Increased scale floor + expansion multiplier
                 const cardScale =
-                  (0.55 + p * 0.55) *
+                  (0.65 + p * 0.45) *
                   (hot ? 1.15 : 1) *
                   (isExpanded ? 1.25 : 1) *
-                  Math.max(scale * 1.12, isSmallMobile ? 0.78 : isMobile ? 0.88 : 0.98);
+                  Math.max(scale * 1.15, isSmallMobile ? 0.82 : isMobile ? 0.92 : 1.02);
 
                 return (
                   <div
@@ -733,7 +733,7 @@ export function App() {
                     style={{
                       transform: `translate(-50%,-50%) translate(${x}px, ${y}px) scale(${cardScale})`,
                       zIndex: isExpanded ? 80 : Math.round(p * 100),
-                      opacity: isPulled ? 0.4 : 0.18 + p * 0.82,
+                      opacity: isPulled ? 0.55 : 0.88 + p * 0.12,
                     }}
                   >
                     <button
@@ -742,19 +742,18 @@ export function App() {
                         e.stopPropagation();
                         handlePullOutCard(s);
                       }}
-                      className={`glass relative rounded-2xl p-3 sm:p-3.5 text-left transition-all duration-300 touch-manipulation cursor-pointer w-full block ${
+                      className={`relative rounded-2xl p-3 sm:p-3.5 text-left transition-all duration-300 touch-manipulation cursor-pointer w-full block bg-[#0f1423]/95 backdrop-blur-2xl shadow-2xl ${
                         isExpanded
-                          ? "ring-2 ring-primary border-primary shadow-teal bg-background/95"
-                          : ""
+                          ? "ring-2 ring-primary border-primary shadow-teal"
+                          : "border border-white/15"
                       }`}
                       style={{
-                        width: isSmallMobile ? "11.5rem" : isMobile ? "12.5rem" : "13.5rem",
-                        filter: `blur(${(1 - p) * 1.8}px)`,
+                        width: isSmallMobile ? "12rem" : isMobile ? "13rem" : "14rem",
                         boxShadow: hot
                           ? "var(--glow-amber)"
                           : isExpanded
                             ? "var(--glow-teal)"
-                            : `0 0 ${p * 22}px color-mix(in oklab, ${c} 40%, transparent)`,
+                            : `0 8px 24px -4px rgba(0,0,0,0.8), 0 0 16px color-mix(in oklab, ${c} 45%, transparent)`,
                         borderColor: hot
                           ? "var(--accent)"
                           : isBought
@@ -763,32 +762,31 @@ export function App() {
                               ? "var(--primary)"
                               : isExpanded
                                 ? "var(--primary)"
-                                : `color-mix(in oklab, ${c} 40%, transparent)`,
-                        pointerEvents: p < 0.28 ? "none" : "auto",
+                                : `color-mix(in oklab, ${c} 50%, rgba(255,255,255,0.2))`,
+                        pointerEvents: p < 0.25 ? "none" : "auto",
                       }}
                     >
                       <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
                         <span
-                          className="grid h-9 w-9 sm:h-10 sm:w-10 place-items-center rounded-2xl text-base sm:text-lg shrink-0"
+                          className="grid h-9 w-9 sm:h-10 sm:w-10 place-items-center rounded-2xl text-base sm:text-lg shrink-0 border border-white/20 bg-white/10 shadow-inner"
                           style={{
-                            background: `color-mix(in oklab, ${c} 25%, transparent)`,
-                            boxShadow: `inset 0 0 10px ${c}`,
+                            boxShadow: `inset 0 0 12px ${c}`,
                           }}
                         >
                           {s.icon}
                         </span>
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-xs sm:text-sm font-bold leading-tight text-foreground">
+                          <p className="truncate text-xs sm:text-sm font-extrabold leading-tight text-white drop-shadow-sm">
                             {s.name}
                           </p>
-                          <p className="font-mono text-[10px] sm:text-[11px] text-muted-foreground truncate">
+                          <p className="font-mono text-[10px] sm:text-[11px] text-slate-200 truncate font-medium">
                             {s.cat} · {s.dist}m
                           </p>
                         </div>
                       </div>
 
                       <div
-                        className="mt-2 flex items-center justify-between font-mono text-[9px] sm:text-[10px] uppercase tracking-wider"
+                        className="mt-2 flex items-center justify-between font-mono text-[9.5px] sm:text-[10px] uppercase tracking-wider"
                         style={{ color: c }}
                       >
                         <div className="flex items-center gap-1.5 truncate">
@@ -802,7 +800,7 @@ export function App() {
                               style={{ background: c }}
                             />
                           </span>
-                          <span className="truncate font-semibold">
+                          <span className="truncate font-bold">
                             {isBought
                               ? "Purchased ✓"
                               : isParked
@@ -810,24 +808,26 @@ export function App() {
                                 : "Live Agent"}
                           </span>
                         </div>
-                        <span className="font-bold text-foreground shrink-0">R{s.open}</span>
+                        <span className="font-extrabold text-white shrink-0 text-xs sm:text-sm">
+                          R{s.open}
+                        </span>
                       </div>
 
-                      <div className="mt-1.5 h-4 sm:h-4.5 overflow-hidden font-mono text-[10px] sm:text-[11px] text-foreground/90 bg-muted/30 rounded-md px-1.5 py-0.5">
-                        <p key={ticks[s.id]} className="animate-ticker truncate">
+                      <div className="mt-1.5 h-4 sm:h-4.5 overflow-hidden font-mono text-[10px] sm:text-[11px] text-white bg-black/60 rounded-md px-2 py-0.5 border border-white/15">
+                        <p key={ticks[s.id]} className="animate-ticker truncate font-medium">
                           {ticks[s.id] ?? "Opening channel…"}
                         </p>
                       </div>
 
                       {/* Pull out button overlay on card */}
-                      <div className="mt-2 pt-1 border-t border-border/40 flex items-center justify-between text-[9px] font-mono">
-                        <span className="text-muted-foreground">Tap: Enlarge</span>
+                      <div className="mt-2 pt-1.5 border-t border-white/15 flex items-center justify-between text-[9.5px] font-mono">
+                        <span className="text-slate-300 font-medium">Tap: Enlarge</span>
                         <span
                           onClick={(e) => {
                             e.stopPropagation();
                             handlePullOutCard(s);
                           }}
-                          className="rounded-lg bg-primary/15 px-2 py-0.5 text-primary hover:bg-primary/25 transition-colors cursor-pointer"
+                          className="rounded-lg bg-primary/25 border border-primary/40 px-2 py-0.5 text-primary font-bold hover:bg-primary/40 transition-colors cursor-pointer"
                           title="Pull this card out to float freely or deck stack"
                         >
                           + Pull 📑

@@ -178,17 +178,17 @@ export function FloatingDeckCard({
         touchAction: "none",
         zIndex: deckAlignment ? deckAlignment.zIndex : isDragging ? 100 : isExpanded ? 90 : 60,
       }}
-      className={`glass fixed rounded-3xl p-3.5 sm:p-4.5 shadow-2xl transition-[box-shadow,background-color,border-color] duration-200 select-none cursor-grab active:cursor-grabbing border ${
+      className={`fixed rounded-3xl p-3.5 sm:p-4.5 shadow-2xl transition-[box-shadow,background-color,border-color] duration-200 select-none cursor-grab active:cursor-grabbing border ${
         swipeAction === "release"
-          ? "border-secondary bg-secondary/25 ring-4 ring-secondary/40"
+          ? "border-secondary bg-secondary/30 ring-4 ring-secondary/40"
           : swipeAction === "park"
-            ? "border-primary bg-primary/25 ring-4 ring-primary/40"
+            ? "border-primary bg-primary/30 ring-4 ring-primary/40"
             : swipeAction === "buy"
-              ? "border-accent bg-accent/25 ring-4 ring-accent/40"
+              ? "border-accent bg-accent/30 ring-4 ring-accent/40"
               : isExpanded
-                ? "border-primary/80 shadow-teal ring-2 ring-primary/30 bg-background/95 w-[90vw] sm:w-[360px]"
-                : "border-border/80 shadow-xl bg-background/90 w-[85vw] sm:w-[310px]"
-      } backdrop-blur-xl`}
+                ? "border-primary/80 shadow-teal ring-2 ring-primary/30 bg-[#0f1423]/95 w-[90vw] sm:w-[360px]"
+                : "border-white/20 shadow-2xl bg-[#0f1423]/95 w-[85vw] sm:w-[310px]"
+      } backdrop-blur-2xl`}
     >
       {/* Visual Swipe Direction Indicators */}
       {swipeAction === "release" && (

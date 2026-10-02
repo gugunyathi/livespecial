@@ -49,6 +49,9 @@ export function InteractiveDealCard({
   const [isDragging, setIsDragging] = useState(false);
   const [swipeAction, setSwipeAction] = useState<"park" | "buy" | "release" | null>(null);
 
+  // Minimized to top-right corner state
+  const [isMinimized, setIsMinimized] = useState<boolean>(false);
+
   // Size scale & internal expanded state fallback
   const [internalExpanded, setInternalExpanded] = useState<boolean>(false);
   const isExpanded = controlledExpanded !== undefined ? controlledExpanded : internalExpanded;
@@ -80,7 +83,7 @@ export function InteractiveDealCard({
     triggerHaptic(isExpanded ? [20, 30, 20] : [30, 50, 40]);
   }, [controlledToggleExpand, isExpanded]);
 
-  // Keyboard controls: ArrowLeft (Park), ArrowRight (Buy), ArrowUp / Escape (Release / Dismiss), Space (Size)
+  // Keyboard controls: ArrowLeft (Park), ArrowRight (Buy), ArrowUp / Escape (Release / Dismiss), Space (Size), M / - (Minimize)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't intercept if user is typing in an input
@@ -103,6 +106,10 @@ export function InteractiveDealCard({
       } else if (e.key === " " || e.key.toLowerCase() === "z") {
         e.preventDefault();
         toggleSize();
+      } else if (e.key === "-" || e.key === "_" || e.key.toLowerCase() === "m") {
+        e.preventDefault();
+        setIsMinimized((prev) => !prev);
+        triggerHaptic(20);
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
         triggerHaptic([30, 40, 50]);
@@ -227,6 +234,76 @@ export function InteractiveDealCard({
   const totalY = pos.y + dragOffset.y;
   const rotation = dragOffset.x * 0.05 - (dragOffset.y < 0 ? dragOffset.y * 0.02 : 0);
 
+  // MINIMIZED STATE: Floating small chip docked in top right corner
+  if (isMinimized) {
+    return (
+      <div
+        onClick={() => {
+          setIsMinimized(false);
+          triggerHaptic(25);
+        }}
+        className="fixed top-16 right-3 sm:top-20 sm:right-6 z-50 animate-slideup cursor-pointer group select-none"
+        title="Click to restore deal card"
+      >
+        <div className="flex items-center gap-2.5 rounded-full bg-[#0f1423]/95 border border-accent/60 px-3 py-2 shadow-amber shadow-2xl backdrop-blur-2xl transition-all duration-300 group-hover:scale-105 group-hover:border-accent">
+          {/* Animated ping dot + Store Icon */}
+          <div className="relative flex items-center justify-center shrink-0">
+            <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-accent" />
+            </span>
+            <span className="text-lg">{deal.store.icon}</span>
+          </div>
+
+          {/* Core Info */}
+          <div className="min-w-0 pr-1">
+            <div className="flex items-center gap-1.5 font-mono text-[10px] leading-none">
+              <span className="font-extrabold text-accent">R{deal.price}</span>
+              <span className="text-muted-foreground line-through text-[9px]">
+                R{deal.store.open}
+              </span>
+              <span className="text-accent font-bold">(-{discountPercent}%)</span>
+            </div>
+            <p className="font-mono text-[9px] text-muted-foreground mt-0.5 flex items-center gap-1 truncate max-w-[130px]">
+              <span className="text-white truncate">{deal.store.name}</span>
+              <span>·</span>
+              <span className="text-primary font-bold">{mm}</span>
+            </p>
+          </div>
+
+          {/* Quick Buttons */}
+          <div className="flex items-center gap-1 pl-1 border-l border-white/15">
+            {/* Expand button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsMinimized(false);
+                triggerHaptic(20);
+              }}
+              className="h-6 px-2 flex items-center justify-center rounded-full bg-accent/20 hover:bg-accent/30 text-accent font-mono text-[10px] font-bold transition-transform active:scale-95 cursor-pointer"
+              title="Expand Deal Card"
+            >
+              ＋ Open
+            </button>
+
+            {/* Dismiss button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                triggerHaptic(15);
+                onDismiss();
+              }}
+              className="h-6 w-6 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors text-xs cursor-pointer"
+              aria-label="Dismiss deal"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <aside
       ref={cardRef}
@@ -241,17 +318,17 @@ export function InteractiveDealCard({
         touchAction: "none",
         zIndex: deckAlignment ? deckAlignment.zIndex : isDragging ? 100 : isExpanded ? 90 : 50,
       }}
-      className={`glass fixed rounded-3xl p-4 sm:p-5 shadow-2xl transition-all duration-300 select-none cursor-grab active:cursor-grabbing border ${
+      className={`fixed rounded-3xl p-4 sm:p-5 shadow-2xl transition-all duration-300 select-none cursor-grab active:cursor-grabbing border ${
         swipeAction === "release"
-          ? "border-secondary bg-secondary/25 ring-4 ring-secondary/40"
+          ? "border-secondary bg-secondary/30 ring-4 ring-secondary/40"
           : swipeAction === "park"
-            ? "border-primary bg-primary/20 ring-4 ring-primary/30"
+            ? "border-primary bg-primary/30 ring-4 ring-primary/30"
             : swipeAction === "buy"
-              ? "border-accent bg-accent/20 ring-4 ring-accent/30"
+              ? "border-accent bg-accent/30 ring-4 ring-accent/30"
               : isExpanded
-                ? "border-primary/80 shadow-teal ring-2 ring-primary/30 bg-background/95 w-[92vw] sm:w-[440px] max-w-[460px]"
-                : "border-accent/50 shadow-amber bg-background/90 w-[92vw] sm:w-[375px]"
-      } bottom-24 left-3 right-3 sm:left-auto sm:right-6 sm:bottom-28 md:right-8 md:top-24 md:bottom-auto backdrop-blur-xl max-h-[85vh] overflow-y-auto`}
+                ? "border-primary/80 shadow-teal ring-2 ring-primary/30 bg-[#0f1423]/98 w-[92vw] sm:w-[440px] max-w-[460px]"
+                : "border-accent/60 shadow-amber bg-[#0f1423]/95 w-[92vw] sm:w-[375px]"
+      } bottom-24 left-3 right-3 sm:left-auto sm:right-6 sm:bottom-28 md:right-8 md:top-24 md:bottom-auto backdrop-blur-2xl max-h-[85vh] overflow-y-auto`}
     >
       {/* Visual Swipe Direction Indicators */}
       {swipeAction === "release" && (
@@ -304,6 +381,20 @@ export function InteractiveDealCard({
             title="Double-tap or tap to toggle expanded view"
           >
             <span>{isExpanded ? "▲ Collapse" : "▼ Expand Specs"}</span>
+          </button>
+
+          {/* Minus Button: Minimize to floating small top right corner */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              triggerHaptic(20);
+              setIsMinimized(true);
+            }}
+            className="h-7 w-7 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer font-bold text-sm"
+            title="Minimize to floating corner badge"
+            aria-label="Minimize deal card"
+          >
+            −
           </button>
 
           {/* Dismiss / Release Button */}
@@ -500,9 +591,11 @@ export function InteractiveDealCard({
 
       {/* Double-tap prompt & Keyboard hint */}
       <div className="mt-2 text-center text-[9px] font-mono text-muted-foreground/80 flex items-center justify-center gap-2">
-        <span>👆 Double-tap for {isExpanded ? "summary" : "specs & distance"}</span>
+        <span>− Minimize</span>
         <span>·</span>
-        <span>⌨ ← / → / ↑</span>
+        <span>👆 Double-tap for specs</span>
+        <span>·</span>
+        <span>⌨ ← / → / M</span>
       </div>
     </aside>
   );
