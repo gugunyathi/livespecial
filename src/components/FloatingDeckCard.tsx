@@ -262,6 +262,23 @@ export function FloatingDeckCard({
       </div>
 
       {/* Store & Item Info */}
+      {store.image && (
+        <div className="relative mt-2 h-24 sm:h-28 w-full overflow-hidden rounded-xl border border-white/15 shadow-inner">
+          <img
+            src={store.image}
+            alt={store.item}
+            className="h-full w-full object-cover"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0f1423] via-transparent to-black/30" />
+          {store.specialBadge && (
+            <span className="absolute top-1.5 left-1.5 rounded-full bg-accent text-accent-foreground font-mono text-[8.5px] font-black px-1.5 py-0.5 shadow-md">
+              ⚡ {store.specialBadge}
+            </span>
+          )}
+        </div>
+      )}
+
       <div className="mt-2 flex items-center justify-between gap-2">
         <div className="min-w-0">
           <h3 className="text-sm sm:text-base font-bold text-foreground truncate">{store.item}</h3>

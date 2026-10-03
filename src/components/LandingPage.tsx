@@ -2,11 +2,13 @@ import { useState } from "react";
 import heroStoreImage from "@/assets/images/hero_autonomous_store_1790899130361.jpg";
 import { type PasskeyUser, signOutPasskey } from "@/lib/passkey-auth";
 import { AutoComLogo } from "@/components/AutoComLogo";
+import { PWAInstallButton } from "@/components/PWAInstallButton";
 
 interface LandingPageProps {
   currentUser: PasskeyUser | null;
   onOpenPasskeyModal: (mode: "signin" | "signup") => void;
   onLaunchLiveMesh: () => void;
+  onOpenWalkthrough: () => void;
   onSignOut: () => void;
 }
 
@@ -14,6 +16,7 @@ export function LandingPage({
   currentUser,
   onOpenPasskeyModal,
   onLaunchLiveMesh,
+  onOpenWalkthrough,
   onSignOut,
 }: LandingPageProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -36,7 +39,7 @@ export function LandingPage({
           </button>
 
           {/* Zone 2: 4 Clean Nav Links on Desktop */}
-          <nav className="hidden md:flex items-center gap-7 text-xs font-medium text-muted-foreground">
+          <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-muted-foreground">
             <a href="#protocol" className="hover:text-foreground transition-colors">
               Protocol
             </a>
@@ -46,13 +49,18 @@ export function LandingPage({
             <a href="#capabilities" className="hover:text-foreground transition-colors">
               Capabilities
             </a>
-            <a href="#network-metrics" className="hover:text-foreground transition-colors">
-              Network Metrics
-            </a>
+            <button
+              onClick={onOpenWalkthrough}
+              className="text-primary hover:text-white transition-colors cursor-pointer flex items-center gap-1 font-bold"
+            >
+              <span>💡</span>
+              <span>Walkthrough Guide</span>
+            </button>
           </nav>
 
           {/* Zone 3: 1-2 Primary Action Buttons */}
           <div className="flex items-center gap-1.5 sm:gap-3">
+            <PWAInstallButton className="hidden sm:flex" />
             {currentUser ? (
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <div className="hidden sm:flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-mono text-primary">
@@ -138,6 +146,15 @@ export function LandingPage({
             >
               Live Network Metrics
             </a>
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onOpenWalkthrough();
+              }}
+              className="block w-full text-left py-1.5 text-sm font-semibold text-primary hover:text-white transition-colors cursor-pointer"
+            >
+              💡 Interactive Walkthrough Guide
+            </button>
             <div className="pt-2 border-t border-border/40 flex justify-center">
               <button
                 onClick={() => {
@@ -192,6 +209,14 @@ export function LandingPage({
           >
             <span>Launch 3D Proximity Mesh</span>
             <span>→</span>
+          </button>
+
+          <button
+            onClick={onOpenWalkthrough}
+            className="rounded-2xl border border-white/20 bg-white/5 hover:bg-white/10 px-5 sm:px-6 py-3.5 text-sm sm:text-base font-semibold text-foreground hover:border-primary transition-all flex items-center justify-center gap-2 cursor-pointer min-h-[48px] w-full sm:w-auto"
+          >
+            <span>💡</span>
+            <span>How It Works Walkthrough</span>
           </button>
 
           {!currentUser ? (

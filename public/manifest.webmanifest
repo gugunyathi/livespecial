@@ -1,9 +1,21 @@
 {
-  "name": "The Autonomous Commerce Network",
-  "short_name": "ACN",
+  "id": "/",
+  "name": "AutoCom - Autonomous Realtime Commerce Network",
+  "short_name": "AutoCom",
+  "description": "Where your live AI shopping agent negotiates deals within 50 meters on a spinning proximity sphere.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#05060a",
   "theme_color": "#05060a",
-  "icons": [{ "src": "/favicon.ico", "sizes": "64x64", "type": "image/x-icon" }]
+  "categories": ["shopping", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon",
+      "purpose": "any"
+    }
+  ]
 }

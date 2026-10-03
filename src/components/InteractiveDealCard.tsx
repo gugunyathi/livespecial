@@ -227,7 +227,9 @@ export function InteractiveDealCard({
   const walkingSeconds = Math.max(12, Math.round(deal.store.dist * 3.2));
   const rssiValue = -(42 + (deal.store.dist % 24));
   const discountAmount = deal.store.open - deal.price;
-  const discountPercent = Math.round((1 - deal.price / deal.store.open) * 100);
+  const isFree = deal.price === 0 || deal.isFreeGiveaway;
+  const discountPercent = isFree ? 100 : Math.round((1 - deal.price / deal.store.open) * 100);
+  const isSuperDeal = discountPercent >= 40 || isFree || deal.isHighValue;
 
   // Dynamic transform
   const totalX = pos.x + dragOffset.x;
@@ -245,12 +247,28 @@ export function InteractiveDealCard({
         className="fixed top-16 right-3 sm:top-20 sm:right-6 z-50 animate-slideup cursor-pointer group select-none"
         title="Click to restore deal card"
       >
-        <div className="flex items-center gap-2.5 rounded-full bg-[#0f1423]/95 border border-accent/60 px-3 py-2 shadow-amber shadow-2xl backdrop-blur-2xl transition-all duration-300 group-hover:scale-105 group-hover:border-accent">
+        <div
+          className={`flex items-center gap-2.5 rounded-full px-3 py-2 shadow-2xl backdrop-blur-2xl transition-all duration-300 group-hover:scale-105 border ${
+            isFree
+              ? "bg-[#081812]/95 border-emerald-500 ring-2 ring-emerald-500/60 animate-giveaway-flash"
+              : isSuperDeal
+                ? "bg-[#140810]/95 border-rose-500 ring-2 ring-rose-500/60 animate-mega-flash"
+                : "bg-[#0f1423]/95 border-accent ring-2 ring-accent/60 animate-deal-flash"
+          }`}
+        >
           {/* Animated ping dot + Store Icon */}
           <div className="relative flex items-center justify-center shrink-0">
             <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-accent" />
+              <span
+                className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                  isFree ? "bg-emerald-400" : isSuperDeal ? "bg-rose-400" : "bg-accent"
+                }`}
+              />
+              <span
+                className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
+                  isFree ? "bg-emerald-500" : isSuperDeal ? "bg-rose-500" : "bg-accent"
+                }`}
+              />
             </span>
             <span className="text-lg">{deal.store.icon}</span>
           </div>
@@ -258,11 +276,25 @@ export function InteractiveDealCard({
           {/* Core Info */}
           <div className="min-w-0 pr-1">
             <div className="flex items-center gap-1.5 font-mono text-[10px] leading-none">
-              <span className="font-extrabold text-accent">R{deal.price}</span>
-              <span className="text-muted-foreground line-through text-[9px]">
-                R{deal.store.open}
+              <span
+                className={`font-extrabold ${
+                  isFree ? "text-emerald-400" : isSuperDeal ? "text-rose-400" : "text-accent"
+                }`}
+              >
+                {isFree ? "FREE" : `R${deal.price}`}
               </span>
-              <span className="text-accent font-bold">(-{discountPercent}%)</span>
+              {!isFree && (
+                <span className="text-muted-foreground line-through text-[9px]">
+                  R{deal.store.open}
+                </span>
+              )}
+              <span
+                className={`font-bold ${
+                  isFree ? "text-emerald-400" : isSuperDeal ? "text-rose-400" : "text-accent"
+                }`}
+              >
+                (-{discountPercent}%)
+              </span>
             </div>
             <p className="font-mono text-[9px] text-muted-foreground mt-0.5 flex items-center gap-1 truncate max-w-[130px]">
               <span className="text-white truncate">{deal.store.name}</span>
@@ -325,9 +357,13 @@ export function InteractiveDealCard({
             ? "border-primary bg-primary/30 ring-4 ring-primary/30"
             : swipeAction === "buy"
               ? "border-accent bg-accent/30 ring-4 ring-accent/30"
-              : isExpanded
-                ? "border-primary/80 shadow-teal ring-2 ring-primary/30 bg-[#0f1423]/98 w-[92vw] sm:w-[440px] max-w-[460px]"
-                : "border-accent/60 shadow-amber bg-[#0f1423]/95 w-[92vw] sm:w-[375px]"
+              : isFree
+                ? "border-emerald-500 ring-2 ring-emerald-500/60 animate-giveaway-flash bg-[#081812]/98 w-[92vw] sm:w-[440px] max-w-[460px]"
+                : isSuperDeal
+                  ? "border-rose-500 ring-2 ring-rose-500/60 animate-mega-flash bg-[#140810]/98 w-[92vw] sm:w-[440px] max-w-[460px]"
+                  : isExpanded
+                    ? "border-primary ring-2 ring-primary/60 animate-deal-flash bg-[#0f1423]/98 w-[92vw] sm:w-[440px] max-w-[460px]"
+                    : "border-accent ring-2 ring-accent/60 animate-deal-flash bg-[#0f1423]/95 w-[92vw] sm:w-[375px]"
       } bottom-24 left-3 right-3 sm:left-auto sm:right-6 sm:bottom-28 md:right-8 md:top-24 md:bottom-auto backdrop-blur-2xl max-h-[85vh] overflow-y-auto`}
     >
       {/* Visual Swipe Direction Indicators */}
@@ -413,6 +449,26 @@ export function InteractiveDealCard({
       </div>
 
       {/* Primary Item details */}
+      {deal.store.image && (
+        <div className="relative mt-2.5 h-28 sm:h-32 w-full overflow-hidden rounded-2xl border border-white/20 shadow-inner group">
+          <img
+            src={deal.store.image}
+            alt={deal.store.item}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0f1423] via-transparent to-black/30" />
+          {deal.store.specialBadge && (
+            <span className="absolute top-2 left-2 rounded-full bg-accent text-accent-foreground font-mono text-[9px] font-black px-2 py-0.5 shadow-md">
+              ⚡ {deal.store.specialBadge}
+            </span>
+          )}
+          <span className="absolute bottom-2 right-2 rounded-lg bg-black/70 backdrop-blur-md px-2 py-0.5 font-mono text-[9.5px] text-white border border-white/15">
+            {deal.store.dist}m away
+          </span>
+        </div>
+      )}
+
       <div className="mt-2.5 flex items-center justify-between gap-2">
         <div className="min-w-0">
           <h2 className="text-base sm:text-lg font-bold text-foreground truncate">
